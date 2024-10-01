@@ -1,5 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing"
+import { CustomPrismaModule } from "nestjs-prisma"
 import { ContactsService } from "src/contacts/contacts.service"
+import { extendedPrismaClient } from "../prisma/prisma.extension"
+import { TagsService } from "../tags/tags.service"
 import { ContactsController } from "./contacts.controller"
 
 describe("Contactscontroller", () => {
@@ -7,8 +10,18 @@ describe("Contactscontroller", () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
+			imports: [
+				CustomPrismaModule.forRootAsync({
+					name: "PrismaService",
+					isGlobal: true,
+					useFactory: () => {
+						return extendedPrismaClient
+					},
+				}),
+			],
 			controllers: [ContactsController],
 			providers: [
+				TagsService,
 				{
 					provide: ContactsService,
 					useValue: {

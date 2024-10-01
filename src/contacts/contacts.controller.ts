@@ -176,7 +176,7 @@ export class ContactsController {
 		@Body() updateContactDto: UpdateContactDto,
 		@User() user: UserModel,
 	): Promise<ContactWithTags> {
-		const contact = await this.findOneContact(+id, user)
+		const contact = await this.findOneContact(id, user)
 
 		return this.contactsService.update(contact.id, updateContactDto)
 	}

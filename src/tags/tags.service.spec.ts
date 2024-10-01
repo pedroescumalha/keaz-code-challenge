@@ -1,4 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing"
+import { CustomPrismaModule } from "nestjs-prisma"
+import { extendedPrismaClient } from "../prisma/prisma.extension"
 import { TagsService } from "./tags.service"
 
 describe("Tagsservice", () => {
@@ -6,6 +8,15 @@ describe("Tagsservice", () => {
 
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
+			imports: [
+				CustomPrismaModule.forRootAsync({
+					name: "PrismaService",
+					isGlobal: true,
+					useFactory: () => {
+						return extendedPrismaClient
+					},
+				}),
+			],
 			providers: [TagsService],
 		}).compile()
 
