@@ -41,6 +41,8 @@ export class ContactsService {
 	): Promise<Contact | Prisma.ContactGetPayload<{ include: I }>> {
 		const { fon, tags, ...rest } = dto
 
+        // Pedro Simoes: low - as mentioned before, a phone validation pipe with transformation would be better here
+        // this way we could abstract the validation logic from the service
 		const parsed = parsePhoneNumberFromString(
 			fon.includes("+") ? fon : `+${fon}`,
 		)
@@ -58,6 +60,8 @@ export class ContactsService {
 			include,
 		})
 
+        // Pedro Simoes: medium - this could be executed with the query above, or in a transaction
+        // this way we could avoid the need for multiple queries
 		if (tags?.connect && tags.connect.length > 0) {
 			await Promise.all(
 				tags.connect.map((tag) => this.addTagToContact(tag.id, contact.id)),
@@ -83,6 +87,7 @@ export class ContactsService {
 		const escapedQuery = search ? escapeRegExp(search) : ""
 
 		//TODO: Not type safe!
+        // Pedro Simoes: low - consider switching to the full text search feature of prisma in the future (once it's stable)
 		const or = search
 			? {
 					OR: [
@@ -199,6 +204,7 @@ export class ContactsService {
 	update = async (contactID: string, updateContactDto: UpdateContactDto) => {
 		const { fon, tags, ...rest } = updateContactDto
 
+        // Pedro Simoes: low - as mentioned before, a phone validation pipe with transformation would be better here
 		const parsed = parsePhoneNumberFromString(
 			fon ? (fon.includes("+") ? fon : `+${fon}`) : "",
 		)
@@ -230,6 +236,7 @@ export class ContactsService {
 		return await this.prismaService.client.$transaction(async (tx) => {
 			const { fon } = dto
 
+            // Pedro Simoes: low - as mentioned before, a phone validation pipe with transformation would be better here
 			const internationalFormat = formatFon(fon) as string
 
 			const existingUser = await tx.contact.findFirst({
@@ -266,6 +273,8 @@ export class ContactsService {
 		})
 	}
 
+    // Pedro Simoes: medium - this function could be improved by using a transaction
+    // If one of these queries fails, the data integrity could be compromised
 	addTagToContact = async (tagID: string, contactID: string) => {
 		const contact = await this.prismaService.client.contact.update({
 			where: { id: contactID },
@@ -327,6 +336,8 @@ export class ContactsService {
 		}
 	}
 
+    // Pedro Simoes: medium - this function could be improved by using a transaction
+    // If one of these queries fails, the data integrity could be compromised
 	removeTagFromContact = async (tagID: string, contact: ContactWithTags) => {
 		const updatedContact = await this.prismaService.client.contact.update({
 			where: { id: contact.id },

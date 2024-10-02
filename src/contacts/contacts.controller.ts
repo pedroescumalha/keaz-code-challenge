@@ -54,6 +54,7 @@ export class ContactsController {
 	): Promise<Contact> {
 		const { fon } = createContactDto
 
+        // Pedro Simoes: low - wouldn't it be better to use a phone validation pipe here?
 		const parsed = parsePhoneNumberFromString(
 			fon.includes("+") ? fon : `+${fon}`,
 		)
@@ -186,6 +187,7 @@ export class ContactsController {
 		@Body() dto: ContactBulkDto,
 		@Param("tagID") tagID: string,
 	) {
+        // Pedro Simoes: high - there's a vulnerability here, the user can add tags to contacts that don't belong to them
 		return this.contactsService.addTagToContacts(tagID, dto.contactIDs, 0)
 	}
 
@@ -219,6 +221,7 @@ export class ContactsController {
 
 	@Delete("many")
 	async removeManyContacts(@Body() dto: ContactBulkDto): Promise<void> {
+        // Pedro Simoes: high - there's a vulnerability here, the user can remove contacts that don't belong to them
 		await this.contactsService.removeMany(dto.contactIDs)
 	}
 
